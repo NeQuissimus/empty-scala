@@ -2,7 +2,7 @@ import sbt._
 import Dependencies._
 import Repositories._
 
-scalaOrganization in ThisBuild := "org.typelevel"
+scalaOrganization in ThisBuild := "org.typelasdevel"
 scalaVersion in ThisBuild := Versions.scala
 
 scalacOptions ++= Seq(
