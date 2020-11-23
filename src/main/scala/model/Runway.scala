@@ -13,5 +13,7 @@ case class Runway(
           Some(new Runway(latitude, longitude, depart, arrivee, duree))
       else if (arrivee == "test")
           Some(new Runway(latitude, longitude, depart, arrivee, duree))
+      else
+        None
     }
   }

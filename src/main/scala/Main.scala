@@ -1,3 +1,3 @@
-object Dummy {
-  val dummy = "dummy"
+object Main extends App {
+	println("Hello, world!")
 }
