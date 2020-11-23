@@ -1,4 +1,4 @@
-package model
+package fr.efrei.fp.model
 
 case class Airport( name: String,
 	                  pays: String,

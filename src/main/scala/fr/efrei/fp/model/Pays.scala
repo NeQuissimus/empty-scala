@@ -1,4 +1,4 @@
-package model
+package fr.efrei.fp.model
 
 case class Pays private( code: Int,
                          name: String)
