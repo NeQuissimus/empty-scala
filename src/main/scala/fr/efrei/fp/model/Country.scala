@@ -9,7 +9,7 @@ import scala.util.Try
 case class Country(id: Array[Digit], code: String, name: String, continent: Continent, wikipedia_link: URL, keywords: Array[String])
 
 object Country {
-  private def parseCountryId(countryId: String): Either[String, Array[Digit]] = {
+  private def parseId(countryId: String): Either[String, Array[Digit]] = {
     val countryIdDigits = countryId.toCharArray.map(Digit.buildFrom)
 
     // Check if format is valid
@@ -34,7 +34,7 @@ object Country {
       case x if x < 6 => Left("Unable to parse incomplete data, 6 columns expected, only $x found")
       case _ => {
         // Parse id and ensure it is only made of digits
-        val idEither = parseCountryId(csvBits(0))
+        val idEither = parseId(csvBits(0))
         val countryCode = csvBits(1)
         val countryName = csvBits(2)
         val continentEither = Continent.parse(csvBits(3))
