@@ -2,9 +2,11 @@ package fr.efrei.fp.model
 
 import fr.efrei.fp.util.Digit
 
-case class Country(id: Array[Digit], code: String, name: String, continent: Continent, wikipedia_link: String, keywords: Array[String])
+import java.net.URL
+import scala.util.Try
 
 
+case class Country(id: Array[Digit], code: String, name: String, continent: Continent, wikipedia_link: URL, keywords: Array[String])
 
 object Country {
   private def parseCountryId(countryId: String): Either[String, Array[Digit]] = {
@@ -32,16 +34,19 @@ object Country {
       case x if x < 6 => Left("Unable to parse incomplete data, 6 columns expected, only $x found")
       case _ => {
         // Parse id and ensure it is only made of digits
-        val countryId = parseCountryId(csvBits(0))
+        val idEither = parseCountryId(csvBits(0))
         val countryCode = csvBits(1)
         val countryName = csvBits(2)
-        val countryContinent = Continent.parse(csvBits(3))
-        val countryWikiLink = csvBits(4)
-        val countryKeywords = csvBits.drop(5)
+        val continentEither = Continent.parse(csvBits(3))
+        val wikiLinkEither = Try(new URL(csvBits(4))).toEither
+        val keywords = csvBits.drop(5)
 
-        (countryId, countryContinent) match {
-          case (Right(id), Right(continent)) => Right(Country(id, countryCode, countryName, continent, countryWikiLink, countryKeywords))
-          case _ => Left("Unable to parse country fro some reason")
+        (idEither, continentEither, wikiLinkEither) match {
+          case (Left(_), _, _) => Left("Unable to parse country ID")
+          case (_, Left(_), _) => Left("Unable to parse continent")
+          case (_, _, Left(_)) => Left("Unable to parse Wiki link")
+          case (Right(id), Right(continent), Right(wikiLink)) => Right(Country(id, countryCode, countryName, continent, wikiLink, keywords))
+          case _ => Left("Unable to parse country for some reason")
         }
       }
     }
