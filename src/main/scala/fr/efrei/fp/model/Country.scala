@@ -2,7 +2,7 @@ package fr.efrei.fp.model
 
 import fr.efrei.fp.util.Digit
 import java.net.URL
-
+import scala.io.Source
 import scala.util.Try
 
 case class Country(id: Array[Digit], code: CountryCode, name: String, continent: Continent, wikipedia_link: URL, keywords: Array[String])
@@ -31,7 +31,7 @@ object Country {
 		case _ => Left(s"\"$name\" contains unauthorized characters")
 	}
 
-	def buildFrom(csvLine: String): Either[String, Country] = {
+	def buildFromCSVLine(csvLine: String): Either[String, Country] = {
 		val csvBits = csvLine.split(",").map(
 			_.trim
 		)
@@ -58,4 +58,16 @@ object Country {
 				}
 		}
 	}
+
+  def parseAllFromCSV(csvFilePath: String): Either[String, Array[Country]] = {
+    val csvFile = Source.fromFile(csvFilePath)
+    val countries = csvFile.getLines.map(buildFromCSVLine)
+    csvFile.close()
+
+    if (countries.exists(_.isLeft)) {
+      Left("Unable to parse some countries")
+    } else {
+      Right(countries.map(_.right.get).toArray)
+    }
+  }
 }
