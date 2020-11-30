@@ -18,6 +18,6 @@ object Continent {
 		case "SA" => Right(Continent.SA)
 		case "OC" => Right(Continent.OC)
 		case "AN" => Right(Continent.AN)
-		case _ => Left(s"Unable to parse Continent from \"$s\"")
+		case _ => Left(s"""Unable to parse Continent from "$s"""")
 	}
 }

@@ -6,7 +6,7 @@ object CountryCode {
 
 	def parse(code: String): Either[String, CountryCode] = code match {
 		case countryCodeRegex(_*) => Right(CountryCodeImpl(code))
-		case _ => Left(s"\"$code\" is not a valid country code")
+		case _ => Left(s"""$code" is not a valid country code""")
 	}
 
 	private case class CountryCodeImpl(code: String) extends CountryCode

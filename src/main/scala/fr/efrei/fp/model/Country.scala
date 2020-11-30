@@ -20,7 +20,7 @@ object Country {
 				case _ => false
 			}
 		}) {
-			Left(s"Cannot parse non-digit characters in \"$countryId\"")
+			Left(s"""Cannot parse non-digit characters in "$countryId"""")
 		} else {
 			Right(countryIdDigits.map(_.right.get))
 		}
@@ -28,7 +28,7 @@ object Country {
 
 	private def parseName(name: String): Either[String, String] = name match {
 		case nonCountryCharRegex(_*) => Right(name)
-		case _ => Left(s"\"$name\" contains unauthorized characters")
+		case _ => Left(s""""$name" contains unauthorized characters""")
 	}
 
 	def buildFromCSVLine(csvLine: String): Either[String, Country] = {
@@ -37,7 +37,7 @@ object Country {
 		)
 
 		csvBits.length match {
-			case x if x < 6 => Left("Unable to parse incomplete data, 6 columns expected, only $x found")
+			case x if x < 6 => Left(s"Unable to parse incomplete data, 6 columns expected, only $x found")
 			case _ =>
 				// Parse id and ensure it is only made of digits
 				val idEither = parseId(csvBits(0))
