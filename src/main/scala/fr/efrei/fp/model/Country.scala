@@ -1,6 +1,6 @@
 package fr.efrei.fp.model
 
-import fr.efrei.fp.util.Digit
+import fr.efrei.fp.util.{Continent, CountryCode, Digit}
 import java.net.URL
 import scala.io.Source
 import scala.util.Try
