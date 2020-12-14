@@ -24,6 +24,7 @@ case class Airport( id: Array[Digit],
 
 object Airport {
   private val nonCountryCharRegex = """[_&~"\[\]|`\\/*µ$£¤<>,?;.:!§%²^\d]""".r
+  private val Identifiant= Set()
   private def parseId(airportId: String): Either[String, Array[Digit]] = {
 		val airportIdDigits = airportId.toCharArray.map(Digit.buildFrom)
 
@@ -36,8 +37,15 @@ object Airport {
 			}) {
 			Left(s"""Cannot parse non-digit characters in "$airportId"""")
 		} else {
-			Right(airportIdDigits.map(_.right.get))
-		}
+			Right(airportIdDigits.map(_.right.get)
+        if Identifiant(airportIdDigits){
+
+        }
+            Left("ID existant")
+          else {
+            Identifiant = Identifiant + airportIdDigits
+          }
+1		}
 	}
   private def parseIdent(name: String): Either[String, String] = name match {
     case nonCountryCharRegex(_*) => Right(name)
@@ -61,7 +69,7 @@ object Airport {
       floatLatitude match {
         case floatLatitude if floatLatitude < -90 => Left("Invalid Latitude")
         case floatLatitude if floatLatitude > 90 => Left("Invalid Latitude")
-        else => Right(floatLatitude)
+        case _ => Right(floatLatitude)
       }
     }
     private def parseLongitude(longitude: String): Either[String,Float] = {
@@ -69,24 +77,45 @@ object Airport {
       floatLongitude match {
         case floatLongitude if floatLongitude < -180 => Left("Invalid Latitude")
         case floatLongitude if floatLongitude > 180 => Left("Invalid Latitude")
-      else => Right(floatLongitude)
+        case _ => Right(floatLongitude)
       }
     }
     private def parseElevation(elevation: String): Either[String,Int] = {
       Intelevation = elevation.toInt
       Intelevation match {
         case Intelevation if Intevaluation < 0 => Left("Invalid Elevation")
-      else => Right (Intelevation)
+        case _ => Right (Intelevation)
       }
     }
-
+    private def parseType(Type: String): Either[String,String]= Type match {
+      case "heliport" => Right("heliport")
+      case "small_airport"=> Right("small_airport")
+      case "closed"=>Right("closed")
+      case "seaplane_base"=>Right("sealplane_base")
+      case "medium_airport"=>Right("medium_airport")
+      case "large_airport"=>Right("large_airport")
+      case Left("Invalid")
+    }
+    private def parseMunicipality(name: String): Either[String, String] = name match {
+      case nonCountryCharRegex(_*) => Right(name)
+      case _ => Left(s""""$name" contains unauthorized characters""")
+    }
+    private def parseSceduled(sceduled :String): boolean = sceduled match {
+      case "yes" => true
+      case "no"  => false
+      case _=> null
+    }
+    def buildFromCSVLine2(csvLine: String): Either[String, Country] = {
+      val csvBits = csvLine.split(",").map(
+        _.trim
+      )
     csvBits.length match {
       case x if x < 18 => Left(s"Unable to parse incomplete data, 18 columns expected, only $x found")
       case _ =>
         // Parse id and ensure it is only made of digits
         val idEither = parseId(csvBits(0))//ckeck
         val identEither = parseIdent(csvBits(1))//check
-        val typesEither = parseType(csvBits(2))
+        val typesEither = parseType(csvBits(2))//check
         val nameEither = parseName(csvBits(3))//check
         val latitude_degEither = parseLatitude(csvBits(4))//check
         val longitidue_degEither = parseLongitude(csvBits(5))//check
@@ -94,21 +123,29 @@ object Airport {
         val continentEither = Continent.parse(csvBits(7))//check
         val iso_country = CountryCode.parse(csvBits(8))//check
         val iso_region = parseIsoregion(csvBits(9))
-        val municipamity = parseMunicipality(csvBits(10))
-        val scheduledEither = parseSceduled(csvBits(11))
-        val gps_codeEither = parseGpscode(csvBits(12))
-        val iata_code = parseIatacode(csvBits(13))
-        val local_code = parseLocalcode(csvBits(14))
+        val municipality = parseMunicipality(csvBits(10))//check
+        val scheduledEither = parseSceduled(csvBits(11))//check
+        val gps_codeEither = parseIdent(csvBits(12))//check
+        val iata_code = parseIdent(csvBits(13))//check
+        val local_code = pparseIdent(csvBits(14))//check
         val home_link = Try(new URL(csvBits(15))).toEither//check
         val wikilinkEither = Try(new URL(csvBits(16))).toEither//check
         val keywords = csvBits.drop(17)//check
 
         (idEither, codeEither, nameEither, continentEither, wikiLinkEither) match {
-          case (Left(x), _, _, _, _) => Left(x)
-          case (_, Left(x), _, _, _) => Left(x)
-          case (_, _, Left(x), _, _) => Left(x)
-          case (_, _, _, Left(x), _) => Left(x)
-          case (_, _, _, _, Left(_)) => Left("Unable to parse wikipedia link")
+          case (Left(x), _, _, _, _,_,_,_,_,_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_,Left(x), _, _, _,_,_,_,_,_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _,Left(x), _, _,_,_,_,_,_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _,Left(x), _,_,_,_,_,_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,Left(x),_,_,_,_,_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,Left(x),_,_,_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,_,Left(x),_,_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,_,_,Left(x),_,_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,_,_,_,Left(x),_,_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,_,_,_,_,Left(x),_,_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,_,_,_,_,_,Left(x),_,_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,_,_,_,_,_,_,Left(x),_,_,_,_,_) => Left(x)
+          case (_, _, _, _,_,_,_,_,_,_,_,_,_,Left(x),_,_,_,_) => Left(x)
           case (Right(id), Right(code), Right(name), Right(continent), Right(wikiLink)) => Right(Country(id, code, name, continent, wikiLink, keywords))
           case _ => Left("Unable to parse airport for some reason")
         }
