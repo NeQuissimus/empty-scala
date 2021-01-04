@@ -1,4 +1,4 @@
-package fr.efrei.fp.util
+package fr.efrei.fp.model.util
 
 sealed trait Continent
 object Continent {
