@@ -25,8 +25,6 @@ case class Airport(id: Array[Digit],
                    keywords: Array[String])
 
 object Airport {
-  private val nonCountryCharRegex = """[_&~"\[\]|`\\/*µ$£¤<>,?;.:!§%²^\d]""".r
-
   def buildFromCSVLine2(csvLine: String): Either[String, Airport] = {
     val csvBits = csvLine.split(",").map(
       _.trim
@@ -95,15 +93,9 @@ object Airport {
     }
   }
 
-  private def parseIdent(name: String): Either[String, String] = name match {
-    case nonCountryCharRegex(_*) => Right(name)
-    case _ => Left(s""""$name" contains unauthorized characters""")
-  }
+  private def parseIdent(name: String): Either[String, String] = Right(name)
 
-  private def parseName(name: String): Either[String, String] = name match {
-    case nonCountryCharRegex(_*) => Right(name)
-    case _ => Left(s""""$name" contains unauthorized characters""")
-  }
+  private def parseName(name: String): Either[String, String] = Right(name)
 
   private def parseLatitude(latitude: String): Either[String, Float] = {
     val floatLatitude = latitude.toFloat
@@ -143,10 +135,7 @@ object Airport {
     case _ => Left("Invalid")
   }
 
-  private def parseMunicipality(name: String): Either[String, String] = name match {
-    case nonCountryCharRegex(_*) => Right(name)
-    case _ => Left(s""""$name" contains unauthorized characters""")
-  }
+  private def parseMunicipality(name: String): Either[String, String] = Right(name)
 
   private def parseScheduled(scheduled: String): Boolean = scheduled match {
     case "yes" => true
