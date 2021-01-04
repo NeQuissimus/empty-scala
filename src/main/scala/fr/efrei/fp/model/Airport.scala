@@ -24,7 +24,7 @@ case class Airport( id: Array[Digit],
 
 object Airport {
   private val nonCountryCharRegex = """[_&~"\[\]|`\\/*µ$£¤<>,?;.:!§%²^\d]""".r
-  private val Identifiant= Set()
+  private val Identifiant = scala.collection.mutable.Set[Array[Either[String, Digit]]]()
   private def parseId(airportId: String): Either[String, Array[Digit]] = {
 		val airportIdDigits = airportId.toCharArray.map(Digit.buildFrom)
 
@@ -44,6 +44,7 @@ object Airport {
             Left("ID existant")
           else {
             Identifiant = Identifiant + airportIdDigits
+            Right(airportIdDigits.map(_.right.get))
           }
 1		}
 	}
