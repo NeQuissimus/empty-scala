@@ -3,7 +3,8 @@ package fr.efrei.fp.model
 import fr.efrei.fp.model.util.{Continent, CountryCode, Digit}
 
 import java.net.URL
-import scala.util.Try
+import scala.io.Source
+import scala.util.{Failure, Success, Try}
 
 case class Airport(id: Array[Digit],
                    ident: String,
@@ -25,10 +26,25 @@ case class Airport(id: Array[Digit],
                    keywords: Array[String])
 
 object Airport {
-  def buildFromCSVLine2(csvLine: String): Either[String, Airport] = {
-    val csvBits = csvLine.split(",").map(
-      _.trim
-    )
+  def parseAllFromCSV(csvFilePath: String): Either[String, Array[Airport]] = {
+    val csvFile = Source.fromFile(csvFilePath, "UTF-8")
+    val countries = csvFile.getLines.drop(1).map(buildFromCSVLine)
+
+    if (!countries.exists(_.isRight)) {
+      csvFile.close
+      Left("Unable to parse all airports")
+    } else {
+      val toReturn = countries.filter(_.isRight).map(_.right.get).toArray
+      csvFile.close
+      Right(toReturn)
+    }
+  }
+
+  def buildFromCSVLine(csvLine: String): Either[String, Airport] = {
+    val csvBits = csvLine.split(",").map(el => {
+      val e = el.trim.replaceAll("\"", "")
+      if (e.startsWith("\"") && e.endsWith("\"")) e.slice(1, e.length - 1) else e
+    })
 
     csvBits.length match {
       case x if x < 18 => Left(s"Unable to parse incomplete data, 18 columns expected, only $x found")
@@ -45,12 +61,12 @@ object Airport {
         val iso_country = CountryCode.parse(csvBits(8)) //check
         val iso_region = csvBits(9)
         val municipality = parseMunicipality(csvBits(10)) //check
-        val scheduledEither = parseScheduled(csvBits(11)) //check
+        val scheduled = parseScheduled(csvBits(11)) //check
         val gps_codeEither = parseIdent(csvBits(12)) //check
         val iata_code = parseIdent(csvBits(13)) //check
         val local_code = parseIdent(csvBits(14)) //check
-        val home_link = Try(new URL(csvBits(15))).toEither //check
-        val wikilinkEither = Try(new URL(csvBits(16))).toEither //check
+        val home_link = Try(new URL(csvBits(15))).toEither.getOrElse("").toString //check
+        val wikiLink = Try(new URL(csvBits(16))).toEither.getOrElse("").toString //check
         val keywords = csvBits.drop(17) //check
 
         if (Array(
@@ -67,12 +83,28 @@ object Airport {
           gps_codeEither,
           iata_code,
           local_code,
-          home_link,
-          wikilinkEither
-        ).foldLeft(false) { (alreadyOneLeft, element) => alreadyOneLeft || element.isLeft }) {
+        ).exists(_.isLeft)) {
           Left("Unable to parse Airport data from CSV line")
         } else {
-          Right(Airport(idEither.right.get, identEither.right.get, typesEither.right.get, nameEither.right.get, latitude_degEither.right.get, longitidue_degEither.right.get, elevation_ftEither.right.get, continentEither.right.get, iso_country.right.get, iso_region, municipality.right.get, scheduledEither, gps_codeEither.right.get, iata_code.right.get, "", "", "", Array("")))
+          Right(Airport(
+            idEither.right.get,
+            identEither.right.get,
+            typesEither.right.get,
+            nameEither.right.get,
+            latitude_degEither.right.get,
+            longitidue_degEither.right.get,
+            elevation_ftEither.right.get,
+            continentEither.right.get,
+            iso_country.right.get,
+            iso_region,
+            municipality.right.get,
+            scheduled,
+            gps_codeEither.right.get,
+            iata_code.right.get,
+            local_code.right.get,
+            home_link,
+            wikiLink,
+            keywords))
         }
     }
   }
@@ -81,12 +113,7 @@ object Airport {
     val airportIdDigits = airportId.toCharArray.map(Digit.buildFrom)
 
     // Check if format is valid
-    if (airportIdDigits.foldLeft(false) { (acc, id) =>
-      id match {
-        case x if acc || x.isLeft => true // Check
-        case _ => false
-      }
-    }) {
+    if (airportIdDigits.exists(_.isLeft)) {
       Left(s"""Cannot parse non-digit characters in "$airportId"""")
     } else {
       Right(airportIdDigits.map(_.right.get))
@@ -98,30 +125,35 @@ object Airport {
   private def parseName(name: String): Either[String, String] = Right(name)
 
   private def parseLatitude(latitude: String): Either[String, Float] = {
-    val floatLatitude = latitude.toFloat
-
-    floatLatitude match {
-      case floatLatitude if floatLatitude < -90 => Left("Invalid Latitude")
-      case floatLatitude if floatLatitude > 90 => Left("Invalid Latitude")
-      case _ => Right(floatLatitude)
+    Try(latitude.toFloat) match {
+      case Failure(_) => Left("Invalid Longitude")
+      case Success(floatLatitude) => floatLatitude match {
+        case floatLongitude if floatLongitude < -180 => Left("Invalid Latitude")
+        case floatLongitude if floatLongitude > 180 => Left("Invalid Latitude")
+        case _ => Right(floatLatitude)
+      }
     }
   }
 
   private def parseLongitude(longitude: String): Either[String, Float] = {
-    val floatLongitude = longitude.toFloat
-
-    floatLongitude match {
-      case floatLongitude if floatLongitude < -180 => Left("Invalid Latitude")
-      case floatLongitude if floatLongitude > 180 => Left("Invalid Latitude")
-      case _ => Right(floatLongitude)
+    Try(longitude.toFloat) match {
+      case Failure(_) => Left("Invalid Longitude")
+      case Success(floatLongitude) => floatLongitude match {
+        case floatLongitude if floatLongitude < -180 => Left("Invalid Longitude")
+        case floatLongitude if floatLongitude > 180 => Left("Invalid Longitude")
+        case _ => Right(floatLongitude)
+      }
     }
   }
 
   private def parseElevation(elevation: String): Either[String, Int] = {
-    val intElevation = elevation.toInt
-    intElevation match {
-      case intElevation if intElevation < 0 => Left("Invalid Elevation")
-      case _ => Right(intElevation)
+    Try(elevation.toInt) match {
+//      case Failure(_) => Left("Invalid Elevation")
+      case Failure(_) => Right(0) // Just to make some airports pass parsing
+      case Success(intElevation) => intElevation match {
+        case intElevation if intElevation < 0 => Left("Invalid Elevation")
+        case _ => Right(intElevation)
+      }
     }
   }
 
