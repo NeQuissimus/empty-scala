@@ -24,7 +24,7 @@ object Main extends App {
           println("Done parsing and gathering parsable airports from airports.csv")
 
           println("Parsing runways")
-          parseValidCountries() match {
+          parseValidRunways() match {
             case Left(x) => println(x)
             case Right(runways) =>
               println("Done parsing and gathering parsable runways from runways.csv")
@@ -32,8 +32,7 @@ object Main extends App {
               println("Done parsing files")
 
               // Now we can actually do something
-
-              getValidMenuChoice()
+              doWorkForAsLongAsNeeded(countries, airports, runways)
           }
       }
   }
@@ -47,7 +46,7 @@ object Main extends App {
     println("1. Get the 10 countries with highest number of airports (with count)")
     println("2. Get the 10 countries with lowest number of airports (with count)")
     println("3. Get the type or runways surfaces per country")
-    println("4. Get the 10 most common runway latitude")
+    println("4. Get the 10 most common runway latitudes")
     println("5. Do nothing and exit")
   }
 
@@ -67,13 +66,43 @@ object Main extends App {
   }
 
   @tailrec
-  def getValidMenuChoice(): MenuChoice = {
+  def validMenuChoice: MenuChoice = {
     val choice = askMenuChoice()
     if (choice == MenuChoice.INVALID_CHOICE) {
       println("Invalid choice, please try again\n")
-      getValidMenuChoice()
+      validMenuChoice
     } else {
       choice
     }
+  }
+
+  @tailrec
+  def doWorkForAsLongAsNeeded(countries: Array[Country], airports: Array[Airport], runways: Array[Runway]): Unit = {
+    validMenuChoice match {
+      case MenuChoice.COUNTRIES_WITH_MOST_AIRPORTS =>
+      case MenuChoice.COUNTRIES_WITH_LESS_AIRPORTS =>
+      case MenuChoice.TYPES_OF_RUNWAYS_PER_COUNTRY =>
+      case MenuChoice.MOST_COMMON_RUNWAY_LATITUDES =>
+        println("The top 10 most common runway latitudes are:")
+        top10MostCommonRunwayLatitudes(runways).zipWithIndex.foreach(r => println(s"${r._2 + 1} - ${r._1._1}deg (${r._1._2} occurences)"))
+      case MenuChoice.EXIT => Unit
+      case MenuChoice.INVALID_CHOICE => doWorkForAsLongAsNeeded(countries, airports, runways)
+    }
+  }
+
+  def top10CountriesWithMostAirports(countries: Array[Country], airports: Array[Airport]): Array[(Country, Int)] = {
+    ???
+  }
+
+  def top10CountriesWithLessAirports(countries: Array[Country], airports: Array[Airport]): Array[(Country, Int)] = {
+    ???
+  }
+
+  def typesOfRunwaysPerCountry(countries: Array[Country], airports: Array[Airport], runways: Array[Runway]): Array[(Country, Array[String])] = {
+    ???
+  }
+
+  def top10MostCommonRunwayLatitudes(runways: Array[Runway]): Array[(Float, Int)] = {
+    runways.map(r => (r.le_latitude_deg, 1)).groupBy(_._1).map(x => (x._1, x._2.length)).toArray.sortBy(_._2).reverse.take(10)
   }
 }
