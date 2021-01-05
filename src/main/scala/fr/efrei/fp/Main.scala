@@ -1,6 +1,6 @@
 package fr.efrei.fp
 
-import fr.efrei.fp.model.util.MenuChoice
+import fr.efrei.fp.model.util.{CountryCode, Digit, MenuChoice}
 import fr.efrei.fp.model.{Airport, Country, Runway}
 
 import java.util.Scanner
@@ -91,7 +91,18 @@ object Main extends App {
   }
 
   def top10CountriesWithMostAirports(countries: Array[Country], airports: Array[Airport]): Array[(Country, Int)] = {
-    ???
+    def countryWithCode(code: CountryCode): Option[Country] = countries.find(c => c.code.equals(code))
+
+    // Keep only usable airports (those who have a known associated country)
+    val usableAirports = airports.filter(a => countryWithCode(a.iso_country).isDefined)
+
+    usableAirports
+      .groupBy(_.iso_country)
+      .map(x => (countryWithCode(x._1).get, x._2.length))
+      .toArray
+      .sortBy(_._2)
+      .reverse
+      .take(10)
   }
 
   def top10CountriesWithLessAirports(countries: Array[Country], airports: Array[Airport]): Array[(Country, Int)] = {

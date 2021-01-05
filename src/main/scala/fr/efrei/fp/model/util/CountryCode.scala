@@ -1,6 +1,12 @@
 package fr.efrei.fp.model.util
 
-sealed trait CountryCode
+class CountryCode(code: String) {
+  override def equals(obj: Any): Boolean = obj match {
+    case that: this.type => that.equals(this)
+    case that: String => that.equals(this.code)
+    case _ => false
+  }
+}
 
 object CountryCode {
   private val countryCodeRegex = "^[A-Z]{2}$"
@@ -15,6 +21,5 @@ object CountryCode {
     }
   }
 
-  private case class CountryCodeImpl(code: String) extends CountryCode
-
+  private case class CountryCodeImpl(code: String) extends CountryCode(code)
 }
