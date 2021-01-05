@@ -26,4 +26,19 @@ object Digit {
 		case '9' => Right(Digit.`9`)
 		case _ => Left("Unable to parse digit")
 	}
+
+   def toString(x: Digit): String = x match {
+    case Digit.`0` => "0"
+    case Digit.`1` => "1"
+    case Digit.`2` => "2"
+    case Digit.`3` => "3"
+    case Digit.`4` => "4"
+    case Digit.`5` => "5"
+    case Digit.`6` => "6"
+    case Digit.`7` => "7"
+    case Digit.`8` => "8"
+    case Digit.`9` => "9"
+  }
+
+  def parseInt(v: Array[Digit]): Int = v.map(toString).mkString("").toInt
 }
