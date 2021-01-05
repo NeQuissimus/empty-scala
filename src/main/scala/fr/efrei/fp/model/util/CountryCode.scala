@@ -1,9 +1,11 @@
 package fr.efrei.fp.model.util
 
 class CountryCode(code: String) {
+  override def toString: String = this.code
+
   override def equals(obj: Any): Boolean = obj match {
-    case that: this.type => that.equals(this)
-    case that: String => that.equals(this.code)
+    case that: this.type => that.toString.equals(this.toString)
+    case that: String => that.equals(this.toString)
     case _ => false
   }
 }
