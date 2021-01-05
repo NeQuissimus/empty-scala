@@ -33,7 +33,7 @@ object Runway {
     csvFile.close
 
     if (toReturn.length == 0) {
-      Left("Unable to parse all runways")
+      Left(s"Unable to parse any runway from $csvFilePath")
     } else {
       Right(toReturn)
     }

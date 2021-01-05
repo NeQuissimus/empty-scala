@@ -32,7 +32,7 @@ object Airport {
 
     if (!countries.exists(_.isRight)) {
       csvFile.close
-      Left("Unable to parse all airports")
+      Left(s"Unable to parse any airport from $csvFilePath")
     } else {
       val toReturn = countries.filter(_.isRight).map(_.right.get).toArray
       csvFile.close

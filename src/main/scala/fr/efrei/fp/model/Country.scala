@@ -16,7 +16,7 @@ object Country {
 
     if (!countries.exists(_.isRight)) {
       csvFile.close
-      Left("Unable to parse all countries")
+      Left(s"Unable to parse any country from $csvFilePath")
     } else {
       val toReturn = countries.filter(_.isRight).map(_.right.get).toArray
       csvFile.close
